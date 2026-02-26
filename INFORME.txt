@@ -1,0 +1,116 @@
+INFORME DE EJECUCIÓN DEL PROYECTO
+Analizador Léxico – Proyecto 1
+Estudiante: Elmer Eduardo Salazar Flores
+UNED – Compiladores 03307
+
+Este documento explica, de forma sencilla y paso a paso, cómo ejecutar el programa del analizador léxico. 
+No se requieren conocimientos técnicos avanzados.
+
+------------------------------------------------------------
+1. ABRIR LA CONSOLA DE WINDOWS (CMD)
+------------------------------------------------------------
+1. Presione las teclas:  Windows  +  R
+2. En la ventana que aparece, escriba:  cmd
+3. Presione Enter.
+
+Se abrirá una ventana negra llamada “Símbolo del sistema”.
+
+------------------------------------------------------------
+2. VERIFICAR QUE JAVA ESTÁ INSTALADO
+------------------------------------------------------------
+En la ventana de cmd escriba el siguiente comando:
+
+    java -version
+
+Luego presione Enter.
+
+Si Java está instalado, verá un mensaje parecido a:
+
+    java version "17.0.x"
+
+Si aparece un mensaje indicando que “java no se reconoce”, significa que NO está instalado.
+
+------------------------------------------------------------
+3. SI JAVA NO ESTÁ INSTALADO
+------------------------------------------------------------
+Debe descargarlo desde el sitio oficial:
+
+    https://www.oracle.com/java/technologies/downloads/
+
+Descargue la versión más reciente.
+
+Instale el programa siguiendo las instrucciones en pantalla.
+
+Cuando termine, cierre y vuelva a abrir la ventana de cmd, y repita:
+
+    java -version
+
+------------------------------------------------------------
+4. UBICARSE EN LA CARPETA DEL PROYECTO
+------------------------------------------------------------
+Debe moverse a la carpeta donde guardó el archivo .jar del analizador.
+
+Use el comando:
+
+    cd ruta_de_la_carpeta
+
+Ejemplos:
+    cd C:\Users\Elmer\Desktop\Elmer_Salazar_Proyecto1
+    cd D:\UNED\Compiladores\Elmer_Salazar_Proyecto1
+
+Para ver los archivos dentro de la carpeta puede usar:
+
+    dir
+
+------------------------------------------------------------
+5. PREPARAR EL ARCHIVO .VB A ANALIZAR
+------------------------------------------------------------
+El archivo que desea analizar puede estar en la misma carpeta que el .jar o encontrarse en otra carpeta
+
+Ejemplo estando en la misma carpeta:
+    Elmer_Salazar_Proyecto1.jar
+    archivo_prueba.vb
+
+------------------------------------------------------------
+6. EJECUTAR EL ANALIZADOR LÉXICO
+------------------------------------------------------------
+En la consola escriba:
+
+    java -jar Elmer_Salazar_Proyecto1.jar archivo_prueba.vb (si el archivo de prueba vb está en la misma carpeta)
+    java -jar Elmer_Salazar_Proyecto1.jar "cd C:\Users\elmerarchivo_prueba.vb" (si el archivo está en otra carpeta
+
+Luego presione Enter.
+
+El programa mostrará mensajes de progreso y generará un archivo .log.
+
+------------------------------------------------------------
+7. ARCHIVO DE SALIDA (LOG)
+------------------------------------------------------------
+Después de ejecutar el programa, se generará un archivo llamado:
+
+    archivo_prueba-errores.log
+
+Este archivo contiene:
+- El contenido original del archivo .vb con numeración de líneas.
+- Una lista de errores detectados al final del documento.
+
+------------------------------------------------------------
+8. INTERPRETACIÓN DEL ARCHIVO LOG
+------------------------------------------------------------
+Cada error tiene el formato:
+
+    Error XXX. Línea 000Y. Descripción del error.
+
+Ejemplo:
+    Error 103. Línea 0009. Tipo de dato inválido en declaración Dim.
+
+Esto significa que en la línea 9 del archivo .vb hay un error de tipo.
+
+------------------------------------------------------------
+9. CONTACTO
+------------------------------------------------------------
+Si tiene problemas para ejecutar el programa, revise nuevamente los pasos anteriores o consulte al correo elmer.salazar@uned.cr
+
+------------------------------------------------------------
+FIN DEL INFORME
+------------------------------------------------------------
