@@ -61,7 +61,23 @@ public enum ErrorCode {
     ENDMODULE_ESPACIO_INCORRECTO(140, "Debe existir un único espacio entre 'End' y 'Module'."),
     ENDMODULE_TIENE_TOKENS_EXTRA(141, "La sentencia 'End Module' no debe contener tokens adicionales."),
     ENDMODULE_DUPLICADO(142, "Se encontró más de un 'End Module' válido."),
-    ENDMODULE_NO_ES_ULTIMA_LINEA(143, "'End Module' debe ser la última línea con contenido del archivo.");
+    ENDMODULE_NO_ES_ULTIMA_LINEA(143, "'End Module' debe ser la última línea con contenido del archivo."),
+
+    
+    // ============================================================
+    // BLOQUES — Errores en estructuras de control (Proyecto 2)
+    // ============================================================
+    WHILE_SIN_END(200, "El bloque While no tiene su correspondiente 'End While'."),
+    WHILE_VACIO(201, "El bloque While está vacío."),
+    WHILE_CONDICION_INVALIDA(202, "La condición del While es inválida."),
+
+    FOR_SIN_NEXT(210, "El bloque For no tiene su correspondiente 'Next'."),
+    FOR_VACIO(211, "El bloque For está vacío."),
+    FOR_RANGO_INVALIDO(212, "El rango del For es inválido."),
+
+    IF_SIN_ENDIF(220, "El bloque If no tiene su correspondiente 'End If'."),
+    IF_VACIO(221, "El bloque If está vacío."),
+    IF_CONDICION_INVALIDA(222, "La condición del If es inválida.");
 
     // ============================================================
     // CAMPOS INTERNOS

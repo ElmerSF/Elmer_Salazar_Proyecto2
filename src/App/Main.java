@@ -18,6 +18,7 @@ import Lexer.Lexer;
 import Validaciones.Validador;
 import Errores.ErrorManager;
 import Simbolos.TabladeExpresiones;
+import Validaciones.BlockAnalyzer;
 
 import java.util.List;
 
@@ -98,9 +99,15 @@ public class Main {
         // BARRA DE PROGRESO 
         // ------------------------------------------------------------
         mostrarBarraProgreso();
+        // === PROYECTO 2: Análisis de estructuras de control ===
+            BlockAnalyzer blockAnalyzer = new BlockAnalyzer(errorManager, symbolTable);
+            blockAnalyzer.analizarBloques(lineas);
+            // =======================================================
 
-        // Procesar línea por línea
-        for (int i = 0; i < lineas.length; i++) {
+
+            // Procesar línea por línea
+            for (int i = 0; i < lineas.length; i++) {
+
 
             String linea = lineas[i];
             int numeroLinea = i + 1;
