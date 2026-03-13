@@ -430,7 +430,9 @@ public class Validador {
         }
 
         // Registrar variable en la tabla de símbolos
-        symbolTable.registrar(identificador.lexema, tipoLex);
+        
+        symbolTable.agregar(identificador.lexema, tipoLex);
+
 
         // Asignación opcional
         if (tokens.size() > 4) {
@@ -573,7 +575,9 @@ public class Validador {
                 }
 
                 // Solo se permiten variables de tipo Integer o Byte en operaciones numéricas
-                String tipoVar = symbolTable.tipoDe(t.lexema);
+               
+                String tipoVar = symbolTable.getTipo(t.lexema);
+
 
                 if (!tipoVar.equals("integer") && !tipoVar.equals("byte")) {
                     errorManager.agregarError(ErrorCode.OPERANDO_NO_NUMERICO, linea, numeroLinea);
