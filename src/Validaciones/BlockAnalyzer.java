@@ -1,4 +1,5 @@
-/*UNED Informática Compiladores 3307
+/*
+UNED Informática Compiladores 3307
 Estudiante: Elmer Eduardo Salazar Flores 3-0426-0158
 I Cuatrimestre 2026
 
@@ -9,7 +10,6 @@ Este análisis se ejecuta ANTES del análisis línea por línea para detectar:
  - Bloques vacíos
  - Estructuras incompletas
  - Condiciones mal formadas (versión inicial)
- 
 
 */
 
@@ -58,145 +58,145 @@ public class BlockAnalyzer {
             }
         }
     }
-        // ============================================================
-        // VALIDACIÓN DE BLOQUE WHILE (Proyecto 2)
-        // ============================================================
-        private void validarWhile(String[] lineas, int indiceInicio, Lexer lexer) {
 
-            int lineaInicio = indiceInicio + 1;
-            String lineaWhile = lineas[indiceInicio].trim();
+    // ============================================================
+    // VALIDACIÓN DE BLOQUE WHILE (Proyecto 2)
+    // ============================================================
+    private void validarWhile(String[] lineas, int indiceInicio, Lexer lexer) {
 
-            // ------------------------------------------------------------
-            // 1. Validar condición del While
-            // ------------------------------------------------------------
-            // Esperado: While variable <entero
-            String[] partes = lineaWhile.split("\\s+");
+        int lineaInicio = indiceInicio + 1;
+        String lineaWhile = lineas[indiceInicio].trim();
 
-            if (partes.length != 3) {
-                errorManager.agregarError(
-                        ErrorCode.WHILE_CONDICION_INVALIDA,
-                        "La condición del While es inválida.",
-                        lineaInicio
-                );
-                return;
-            }
+        // ------------------------------------------------------------
+        // 1. Validar condición del While
+        // ------------------------------------------------------------
+        String[] partes = lineaWhile.split("\\s+");
 
-            String variable = partes[1];
-            String condicion = partes[2];
-
-            // Validar que la variable exista y sea Integer
-            if (!symbolTable.existe(variable)) {
-                errorManager.agregarError(
-                        ErrorCode.WHILE_CONDICION_INVALIDA,
-                        "La variable '" + variable + "' no ha sido declarada.",
-                        lineaInicio
-                );
-                return;
-            }
-
-            if (!symbolTable.getTipo(variable).equalsIgnoreCase("Integer")) {
-                errorManager.agregarError(
-                        ErrorCode.WHILE_CONDICION_INVALIDA,
-                        "La variable '" + variable + "' debe ser de tipo Integer.",
-                        lineaInicio
-                );
-                return;
-            }
-
-            // Validar operador y número entero
-            if (!(condicion.contains("<") || condicion.contains(">") || condicion.contains("="))) {
-                errorManager.agregarError(
-                        ErrorCode.WHILE_CONDICION_INVALIDA,
-                        "La condición debe contener un operador válido (<, > o =).",
-                        lineaInicio
-                );
-                return;
-            }
-
-            String[] partesCond = condicion.split("[<>=]");
-
-            if (partesCond.length != 2) {
-                errorManager.agregarError(
-                        ErrorCode.WHILE_CONDICION_INVALIDA,
-                        "La condición del While está mal formada.",
-                        lineaInicio
-                );
-                return;
-            }
-
-            String valor = partesCond[1];
-
-            try {
-                Integer.parseInt(valor);
-            } catch (NumberFormatException e) {
-                errorManager.agregarError(
-                        ErrorCode.WHILE_CONDICION_INVALIDA,
-                        "El valor '" + valor + "' debe ser un número entero.",
-                        lineaInicio
-                );
-                return;
-            }
-
-    // ------------------------------------------------------------
-    // 2. Buscar el End While correspondiente
-    // ------------------------------------------------------------
-    boolean encontradoEnd = false;
-    int indiceEnd = -1;
-
-    for (int i = indiceInicio + 1; i < lineas.length; i++) {
-
-        String linea = lineas[i].trim();
-
-        // No se permiten While anidados
-        if (linea.startsWith("While ")) {
+        if (partes.length != 3) {
             errorManager.agregarError(
-                    ErrorCode.WHILE_SIN_END,
-                    "No se permiten While anidados.",
+                    ErrorCode.WHILE_CONDICION_INVALIDA,
+                    lineaWhile,
                     lineaInicio
             );
             return;
         }
 
-        if (linea.equalsIgnoreCase("End While")) {
-            encontradoEnd = true;
-            indiceEnd = i;
-            break;
+        String variable = partes[1];
+        String condicion = partes[2];
+
+        // Variable no declarada
+        if (!symbolTable.existe(variable)) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_IDENTIFICADOR_NO_DECLARADO,
+                    lineaWhile,
+                    lineaInicio
+            );
+            return;
+        }
+
+        // Variable no numérica
+        if (!symbolTable.getTipo(variable).equalsIgnoreCase("Integer")) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_OPERANDO_INVALIDO,
+                    lineaWhile,
+                    lineaInicio
+            );
+            return;
+        }
+
+        // Operador relacional inválido
+        if (!(condicion.contains("<") || condicion.contains(">") || condicion.contains("="))) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_OPERADOR_RELACIONAL_INVALIDO,
+                    lineaWhile,
+                    lineaInicio
+            );
+            return;
+        }
+
+        String[] partesCond = condicion.split("[<>=]");
+
+        if (partesCond.length != 2) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_CONDICION_INVALIDA,
+                    lineaWhile,
+                    lineaInicio
+            );
+            return;
+        }
+
+        String valor = partesCond[1];
+
+        try {
+            Integer.parseInt(valor);
+        } catch (NumberFormatException e) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_OPERANDO_INVALIDO,
+                    lineaWhile,
+                    lineaInicio
+            );
+            return;
+        }
+
+        // ------------------------------------------------------------
+        // 2. Buscar el End While correspondiente
+        // ------------------------------------------------------------
+        boolean encontradoEnd = false;
+        int indiceEnd = -1;
+
+        for (int i = indiceInicio + 1; i < lineas.length; i++) {
+
+            String linea = lineas[i].trim();
+
+            // No se permiten While anidados
+            if (linea.startsWith("While ")) {
+                errorManager.agregarError(
+                        ErrorCode.BLOQUE_DESBALANCEADO,
+                        linea,
+                        i + 1
+                );
+                return;
+            }
+
+            if (linea.equalsIgnoreCase("End While")) {
+                encontradoEnd = true;
+                indiceEnd = i;
+                break;
+            }
+        }
+
+        if (!encontradoEnd) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_SIN_WEND,
+                    lineaWhile,
+                    lineaInicio
+            );
+            return;
+        }
+
+        // ------------------------------------------------------------
+        // 3. Validar que exista al menos una línea ejecutable
+        // ------------------------------------------------------------
+        boolean tieneCodigo = false;
+
+        for (int i = indiceInicio + 1; i < indiceEnd; i++) {
+
+            String linea = lineas[i].trim();
+
+            if (!linea.isEmpty() && !linea.startsWith("'")) {
+                tieneCodigo = true;
+                break;
+            }
+        }
+
+        if (!tieneCodigo) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_VACIO,
+                    lineaWhile,
+                    lineaInicio
+            );
         }
     }
-
-    if (!encontradoEnd) {
-        errorManager.agregarError(
-                ErrorCode.WHILE_SIN_END,
-                "El bloque While no tiene su correspondiente 'End While'.",
-                lineaInicio
-        );
-        return;
-    }
-
-    // ------------------------------------------------------------
-    // 3. Validar que exista al menos una línea ejecutable
-    // ------------------------------------------------------------
-    boolean tieneCodigo = false;
-
-    for (int i = indiceInicio + 1; i < indiceEnd; i++) {
-
-        String linea = lineas[i].trim();
-
-        if (!linea.isEmpty() && !linea.startsWith("'")) {
-            tieneCodigo = true;
-            break;
-        }
-    }
-
-    if (!tieneCodigo) {
-        errorManager.agregarError(
-                ErrorCode.WHILE_VACIO,
-                "El bloque While está vacío o solo contiene comentarios.",
-                lineaInicio
-        );
-    }
-}
-
 
     // ============================================================
     // VALIDACIÓN DE BLOQUE FOR
@@ -204,6 +204,7 @@ public class BlockAnalyzer {
     private void validarFor(String[] lineas, int indiceInicio, Lexer lexer) {
 
         int lineaInicio = indiceInicio + 1;
+        String lineaFor = lineas[indiceInicio].trim();
         boolean encontradoNext = false;
 
         for (int i = indiceInicio + 1; i < lineas.length; i++) {
@@ -216,7 +217,7 @@ public class BlockAnalyzer {
                 if (i == indiceInicio + 1) {
                     errorManager.agregarError(
                             ErrorCode.FOR_VACIO,
-                            "El bloque For está vacío.",
+                            lineaFor,
                             lineaInicio
                     );
                 }
@@ -226,7 +227,7 @@ public class BlockAnalyzer {
 
         errorManager.agregarError(
                 ErrorCode.FOR_SIN_NEXT,
-                "El bloque For no tiene su correspondiente 'Next'.",
+                lineaFor,
                 lineaInicio
         );
     }
@@ -237,6 +238,7 @@ public class BlockAnalyzer {
     private void validarIf(String[] lineas, int indiceInicio, Lexer lexer) {
 
         int lineaInicio = indiceInicio + 1;
+        String lineaIf = lineas[indiceInicio].trim();
         boolean encontradoEndIf = false;
 
         for (int i = indiceInicio + 1; i < lineas.length; i++) {
@@ -249,7 +251,7 @@ public class BlockAnalyzer {
                 if (i == indiceInicio + 1) {
                     errorManager.agregarError(
                             ErrorCode.IF_VACIO,
-                            "El bloque If está vacío.",
+                            lineaIf,
                             lineaInicio
                     );
                 }
@@ -259,7 +261,7 @@ public class BlockAnalyzer {
 
         errorManager.agregarError(
                 ErrorCode.IF_SIN_ENDIF,
-                "El bloque If no tiene su correspondiente 'End If'.",
+                lineaIf,
                 lineaInicio
         );
     }
