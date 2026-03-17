@@ -6,6 +6,7 @@ Clase para tokenizar cada línea del archivo fuente
 Se usó apoyo de IA para revisión y pruebas del código así como ordenarlo
 */
 package Lexer;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,15 +52,15 @@ public class Lexer {
             // STRINGS ENTRE COMILLAS ASCII
             // ------------------------------------------------------------
             if (c == '"') {
-                
-                //se guarda la posición actual y empieza a recorrer cada caracter
+
+                // se guarda la posición actual y empieza a recorrer cada caracter
                 int inicio = i;
                 i++;
 
-                //StringBuilder es una clase mutable que permite construir cadenas de texto de forma eficiente.
+                // StringBuilder es una clase mutable que permite construir cadenas de texto de forma eficiente.
                 StringBuilder sb = new StringBuilder();
-                
-                //va guardando cada caracter
+
+                // va guardando cada caracter
                 sb.append('"');
 
                 boolean cerrado = false;
@@ -68,7 +69,7 @@ public class Lexer {
                     char d = linea.charAt(i);
                     sb.append(d);
 
-                    //hasta que encuetre la comilla de cierre
+                    // hasta que encuetre la comilla de cierre
                     if (d == '"') {
                         cerrado = true;
                         i++;
@@ -76,8 +77,8 @@ public class Lexer {
                     }
                     i++;
                 }
-                    // Si 'cerrado' es true, la cadena es válida y se marca como STRING_LITERAL.
-                    // Si 'cerrado' es false, significa que falta la comilla de cierre y se marca como UNKNOWN.
+                // Si 'cerrado' es true, la cadena es válida y se marca como STRING_LITERAL.
+                // Si 'cerrado' es false, significa que falta la comilla de cierre y se marca como UNKNOWN.
                 tokens.add(new Token(sb.toString(),
                         cerrado ? TokenType.Type.STRING_LITERAL : TokenType.Type.UNKNOWN));
                 continue;
@@ -133,8 +134,8 @@ public class Lexer {
                 }
 
                 String lexema = linea.substring(inicio, i);
-                
-                //si tiene letras 
+
+                // si tiene letras
                 if (tieneLetras) {
                     tokens.add(new Token(lexema, TokenType.Type.UNKNOWN));
                 } else {
@@ -150,24 +151,24 @@ public class Lexer {
             if (Character.isLetter(c)) {
 
                 int inicio = i;
-                  //mientras sea una letra digito o _
+                // mientras sea una letra digito o _
                 while (i < n &&
                        (Character.isLetterOrDigit(linea.charAt(i)) ||
                         linea.charAt(i) == '_')) {
                     i++;
                 }
-                //palabra completa, y se pasa a mayúscula
+                // palabra completa, y se pasa a mayúscula
                 String lexema = linea.substring(inicio, i);
                 String upper = lexema.toUpperCase();
 
                 // Buscar si coincide con alguna palabra reservada del enum
                 TokenType.Type tipo = obtenerPalabraReservada(upper);
 
-                //si se retorno la palabra reservada se agrega
+                // si se retorno la palabra reservada se agrega
                 if (tipo != null) {
                     tokens.add(new Token(lexema, tipo));
-                    
-                    //si el retorno fue null es un identificador
+
+                    // si el retorno fue null es un identificador
                 } else {
                     tokens.add(new Token(lexema, TokenType.Type.IDENTIFIER));
                 }
@@ -178,12 +179,44 @@ public class Lexer {
             // ------------------------------------------------------------
             // OPERADORES
             // ------------------------------------------------------------
-            
-            //si encontré un signo = y el próximo caracter es también un =
-            //se encontró un == que no es un operador válido en vb
+
+            // si encontré un signo = y el próximo caracter es también un =
+            // se encontró un == que no es un operador válido en vb
             if (c == '=' && i + 1 < n && linea.charAt(i + 1) == '=') {
                 tokens.add(new Token("==", TokenType.Type.OP_INVALID));
                 i += 2;
+                continue;
+            }
+
+            // Operadores relacionales compuestos: <=, >=, <>
+            if (c == '<' && i + 1 < n && linea.charAt(i + 1) == '=') {
+                tokens.add(new Token("<=", TokenType.Type.OP_LTE));
+                i += 2;
+                continue;
+            }
+
+            if (c == '>' && i + 1 < n && linea.charAt(i + 1) == '=') {
+                tokens.add(new Token(">=", TokenType.Type.OP_GTE));
+                i += 2;
+                continue;
+            }
+
+            if (c == '<' && i + 1 < n && linea.charAt(i + 1) == '>') {
+                tokens.add(new Token("<>", TokenType.Type.OP_NEQ));
+                i += 2;
+                continue;
+            }
+
+            // Operadores relacionales simples: <, >
+            if (c == '<') {
+                tokens.add(new Token("<", TokenType.Type.OP_LT));
+                i++;
+                continue;
+            }
+
+            if (c == '>') {
+                tokens.add(new Token(">", TokenType.Type.OP_GT));
+                i++;
                 continue;
             }
 
@@ -234,7 +267,6 @@ public class Lexer {
                 i++;
                 continue;
             }
-        
 
             // ------------------------------------------------------------
             // CUALQUIER OTRO CARÁCTER → UNKNOWN
@@ -250,9 +282,9 @@ public class Lexer {
     // DETECTAR PALABRAS RESERVADAS DEL ENUM
     // ============================================================
     private TokenType.Type obtenerPalabraReservada(String upper) {
-        //se recorre todas las constantes de Enum
+        // se recorre todas las constantes de Enum
         for (TokenType.Type t : TokenType.Type.values()) {
-           //si coincide lo retorna
+            // si coincide lo retorna
             if (t.name().equals(upper)) {
                 return t;
             }
