@@ -29,9 +29,9 @@ public class Main {
     private static final String directorio = System.getProperty("user.dir");
 
     // Activar/desactivar archivos de depuración
-    private static final boolean GENERAR_TOKENS = false;
-    private static final boolean GENERAR_SIMBOLOS = false;
-    private static final boolean GENERAR_CLASIFICACION = false;
+    private static final boolean GENERAR_TOKENS = true;
+    private static final boolean GENERAR_SIMBOLOS = true;
+    private static final boolean GENERAR_CLASIFICACION = true;
 
     public static void main(String[] args) {
 
@@ -113,7 +113,7 @@ public class Main {
             int numeroLinea = i + 1;
 
             // 1. Clasificar línea completa
-            TabladeExpresiones.Expresion tipoLinea = clasificarLinea(linea);
+         //   TabladeExpresiones.Expresion tipoLinea = clasificarLinea(linea);
 
             // 2. Tokenizar
             List<Token> tokens = lexer.tokenizar(linea);
