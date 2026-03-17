@@ -1,5 +1,5 @@
 INFORME DE EJECUCIÓN DEL PROYECTO
-Analizador Léxico – Proyecto 1
+Analizador Léxico – Proyecto 2
 Estudiante: Elmer Eduardo Salazar Flores
 UNED – Compiladores 03307
 
@@ -106,11 +106,163 @@ Ejemplo:
 
 Esto significa que en la línea 9 del archivo .vb hay un error de tipo.
 
-------------------------------------------------------------
-9. CONTACTO
-------------------------------------------------------------
-Si tiene problemas para ejecutar el programa, revise nuevamente los pasos anteriores o consulte al correo elmer.salazar@uned.cr
+--------------------------------------------------------------
+9. VALIDACIONES IMPLEMENTADAS (PROYECTO 2)
+--------------------------------------------------------------
+✔ 9.1 Validación del comando While
+Sintaxis esperada:
 
-------------------------------------------------------------
+Código
+While <variable> <operador> <entero>
+    <código>
+End While
+El sistema valida:
+
+Que exista un End While correspondiente
+
+Que la variable esté declarada previamente
+
+Que la variable sea de tipo Integer
+
+Que el operador sea uno de: <, >, <=, >=, =
+
+Que el valor comparado sea un entero
+
+Que el bloque no esté vacío (no solo comentarios o líneas en blanco)
+
+Que no existan While anidados (según el proyecto)
+
+Errores generados: 200–209
+-----------------------------------------------------------------
+✔ 9.2 Validación del comando For
+Sintaxis esperada:
+
+Código
+For variable = valor_inicial To valor_final
+    <código>
+Next
+El sistema valida:
+
+Que exista la palabra To
+
+Que exista el Next correspondiente
+
+Que la variable esté declarada
+
+Que los valores inicial y final sean enteros
+
+Que el bloque no esté vacío
+
+Que no existan For anidados
+
+Errores generados: 210–222
+-----------------------------------------------------------------
+✔ 9.3 Validación del comando If
+Sintaxis esperada:
+
+Código
+If condicion Then
+    <código>
+Else
+    <código>
+End If
+El sistema valida:
+
+Que exista una condición después de If
+
+Que exista la palabra Then
+
+Que exista al menos una línea de código después de Then
+
+Que exista al menos una línea de código después de Else
+
+Que exista un End If correspondiente
+
+Que no existan If anidados
+
+Errores generados: 230–242
+------------------------------------------------------------------
+✔ 9.4 BlockAnalyzer (nuevo en Proyecto 2)
+Se agregó un módulo especializado que:
+
+Analiza estructuras de control
+
+Usa una pila para validar apertura/cierre
+
+Detecta bloques vacíos
+
+Valida condiciones
+
+Reporta errores específicos
+
+Trabaja antes del Validador
+
+Este módulo es el responsable de todos los errores 200–252.
+--------------------------------------------------------------------
+✔ 9.5 Mejoras al Lexer y TokenType
+Se agregaron:
+
+Operadores relacionales: <, >, <=, >=, <>
+
+Operadores lógicos: And, Or, Not
+
+Tokens para: For, Next, To, While, End, If, Else, ElseIf
+
+Manejo de cadenas, comentarios y operadores inválidos
+
+-------------------------------------------------------------------
+10. PRUEBAS EN OTRO EQUIPO (REQUISITO DE LA RÚBRICA)
+-------------------------------------------------------------------
+El programa fue probado en:
+
+Un equipo Windows 10
+
+Un equipo Windows 11
+
+En ambos casos:
+
+El .jar ejecutó correctamente
+
+El archivo .vb fue leído sin problemas
+
+Se generó el archivo .log con numeración
+
+Las validaciones de While, For e If funcionaron correctamente
+----------------------------------------------------------------------
+11. USO DE IA GENERATIVA (REQUISITO OBLIGATORIO)
+----------------------------------------------------------------------
+Para este proyecto se utilizó IA como apoyo, específicamente Microsoft Copilot, para:
+
+Revisión de código
+
+Corrección de errores
+
+Ordenamiento de clases
+
+Explicación de conceptos
+
+Generación de fragmentos de código bajo supervisión
+
+Redacción de este INFORME.txt
+
+El estudiante revisó, adaptó y comprendió todo el código generado.
+Prompts principales utilizados:
+“Generemos la versión corregida del Validador”
+
+“Revisemos el Lexer”
+
+“Generemos TokenType completo con las correcciones”
+
+“Revisemos Main.java”
+
+“Generemos el INFORME.txt final”
+------------------------------------------------------------------------
+12. CONTACTO
+------------------------------------------------------------------------
+Si tiene problemas para ejecutar el programa, revise nuevamente los pasos anteriores o escriba a:
+
+elmer.salazar@uned.cr
+
+
+**************************************************************************
 FIN DEL INFORME
-------------------------------------------------------------
