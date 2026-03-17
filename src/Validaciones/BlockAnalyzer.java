@@ -35,26 +35,25 @@ public class BlockAnalyzer {
     // ============================================================
     public void analizarBloques(String[] lineas) {
 
-        Lexer lexer = new Lexer();
+        Lexer lexer = new Lexer(); // reservado por si se amplía a tokens luego
 
         for (int i = 0; i < lineas.length; i++) {
 
             String linea = lineas[i].trim();
-            int numeroLinea = i + 1;
 
             // Detectar inicio de bloque WHILE
             if (linea.startsWith("While ")) {
-                validarWhile(lineas, i, lexer);
+                validarWhile(lineas, i);
             }
 
             // Detectar inicio de bloque FOR
             if (linea.startsWith("For ")) {
-                validarFor(lineas, i, lexer);
+                validarFor(lineas, i);
             }
 
             // Detectar inicio de bloque IF
             if (linea.startsWith("If ")) {
-                validarIf(lineas, i, lexer);
+                validarIf(lineas, i);
             }
         }
     }
@@ -62,13 +61,13 @@ public class BlockAnalyzer {
     // ============================================================
     // VALIDACIÓN DE BLOQUE WHILE (Proyecto 2)
     // ============================================================
-    private void validarWhile(String[] lineas, int indiceInicio, Lexer lexer) {
+    private void validarWhile(String[] lineas, int indiceInicio) {
 
         int lineaInicio = indiceInicio + 1;
         String lineaWhile = lineas[indiceInicio].trim();
 
         // ------------------------------------------------------------
-        // 1. Validar condición del While
+        // 1. Validar condición del While (forma básica: While <var> <op> <valor>)
         // ------------------------------------------------------------
         String[] partes = lineaWhile.split("\\s+");
 
@@ -94,8 +93,12 @@ public class BlockAnalyzer {
             return;
         }
 
-        // Variable no numérica
-        if (!symbolTable.getTipo(variable).equalsIgnoreCase("Integer")) {
+        // Variable debe ser numérica (Integer o Byte)
+        String tipoVar = symbolTable.getTipo(variable);
+        if (tipoVar == null ||
+            (!tipoVar.equalsIgnoreCase("Integer") &&
+             !tipoVar.equalsIgnoreCase("Byte"))) {
+
             errorManager.agregarError(
                     ErrorCode.WHILE_OPERANDO_INVALIDO,
                     lineaWhile,
@@ -201,7 +204,7 @@ public class BlockAnalyzer {
     // ============================================================
     // VALIDACIÓN DE BLOQUE FOR
     // ============================================================
-    private void validarFor(String[] lineas, int indiceInicio, Lexer lexer) {
+    private void validarFor(String[] lineas, int indiceInicio) {
 
         int lineaInicio = indiceInicio + 1;
         String lineaFor = lineas[indiceInicio].trim();
@@ -214,6 +217,7 @@ public class BlockAnalyzer {
             if (linea.equalsIgnoreCase("Next")) {
                 encontradoNext = true;
 
+                // Bloque vacío: For ... Next en líneas consecutivas
                 if (i == indiceInicio + 1) {
                     errorManager.agregarError(
                             ErrorCode.FOR_VACIO,
@@ -225,6 +229,7 @@ public class BlockAnalyzer {
             }
         }
 
+        // No se encontró Next correspondiente
         errorManager.agregarError(
                 ErrorCode.FOR_SIN_NEXT,
                 lineaFor,
@@ -235,7 +240,7 @@ public class BlockAnalyzer {
     // ============================================================
     // VALIDACIÓN DE BLOQUE IF
     // ============================================================
-    private void validarIf(String[] lineas, int indiceInicio, Lexer lexer) {
+    private void validarIf(String[] lineas, int indiceInicio) {
 
         int lineaInicio = indiceInicio + 1;
         String lineaIf = lineas[indiceInicio].trim();
@@ -248,6 +253,7 @@ public class BlockAnalyzer {
             if (linea.equalsIgnoreCase("End If")) {
                 encontradoEndIf = true;
 
+                // IF vacío: If ... End If en líneas consecutivas
                 if (i == indiceInicio + 1) {
                     errorManager.agregarError(
                             ErrorCode.IF_VACIO,
@@ -259,6 +265,7 @@ public class BlockAnalyzer {
             }
         }
 
+        // No se encontró End If correspondiente
         errorManager.agregarError(
                 ErrorCode.IF_SIN_ENDIF,
                 lineaIf,
