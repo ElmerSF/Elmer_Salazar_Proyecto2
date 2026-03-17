@@ -4,10 +4,10 @@ Estudiante: Elmer Eduardo Salazar Flores 3-0426-0158
 I Cuatrimestre 2026
 
 Tabla de expresiones que define patrones completos (regex) para reconocer
-estructuras de líneas válidas dentro del lenguaje del Proyecto 1. A diferencia
-del Lexer, que trabaja a nivel de tokens individuales, esta tabla permite
-identificar líneas completas como declaraciones, bloques de control, llamadas
-a funciones, etc.
+estructuras de líneas válidas dentro del lenguaje del Proyecto 1 y Proyecto 2.
+A diferencia del Lexer, que trabaja a nivel de tokens individuales, esta tabla
+permite identificar líneas completas como declaraciones, bloques de control,
+llamadas a funciones, etc.
 
 Cada elemento del enum Expresion contiene un patrón regex que describe la forma
 general de una instrucción. Esta tabla puede utilizarse para validaciones
@@ -108,6 +108,32 @@ public class TabladeExpresiones {
         END_IF("^\\s*End\\s+If\\s*$"),
 
         // ============================================================
+        // WHILE <condición>
+        // Ejemplo:  While x < 10
+        // (La validación semántica de la condición la hace BlockAnalyzer/Validador)
+        // ============================================================
+        WHILE("^\\s*While\\s+.+$"),
+
+        // ============================================================
+        // END WHILE
+        // Ejemplo:  End While
+        // ============================================================
+        END_WHILE("^\\s*End\\s+While\\s*$"),
+
+        // ============================================================
+        // FOR <variable> = <inicio> To <fin>
+        // Ejemplo:  For i = 1 To 10
+        // (La validación de tipos y rangos se hace en el analizador)
+        // ============================================================
+        FOR("^\\s*For\\s+[A-Za-z][A-Za-z0-9_]*\\s*=\\s*.+\\s+To\\s+.+$"),
+
+        // ============================================================
+        // NEXT
+        // Cierre del bloque For
+        // ============================================================
+        NEXT("^\\s*Next\\s*$"),
+
+        // ============================================================
         // DECLARACIÓN DIM
         // Ejemplo:
         //   Dim edad As Integer
@@ -122,6 +148,7 @@ public class TabladeExpresiones {
         // ============================================================
         // ASIGNACIÓN SIMPLE
         // Ejemplo:  x = 10
+        // (La validez de la expresión a la derecha se valida en otra capa)
         // ============================================================
         ASIGNACION("^\\s*[A-Za-z][A-Za-z0-9_]*\\s*=\\s*.+$"),
 
