@@ -63,17 +63,17 @@ public class Validador {
         // se marca como COMENTARIO_INVALIDO.
         int indiceComentario = -1;
         for (int i = 0; i < tokens.size(); i++) {
-            
+
             if (tokens.get(i).es(TokenType.Type.COMMENT)) {
-                //Si se encuentra un comentario en la línea se asigna el valor de i 
-                //indice de comentario
+                // Si se encuentra un comentario en la línea se asigna el valor de i 
+                // índice de comentario
                 indiceComentario = i;
                 break;
             }
         }
 
         // Línea que es SOLO comentario → se ignora completamente
-        //se encontró un solo comentario en la línea
+        // se encontró un solo comentario en la línea
         if (indiceComentario == 0) {
             return;
         }
@@ -128,25 +128,18 @@ public class Validador {
             return;
         }
 
-        // Module encontrado
-        if (primero.es(TokenType.Type.MODULE)) {
-            moduleEncontrado = true;
-            return;
-        }
-
         // ------------------------------------------------------------
         // 5. Declaraciones Dim
         // ------------------------------------------------------------
         if (primero.es(TokenType.Type.DIM)) {
 
             // Dim antes de Module → error
-            //ya no se sigue validando más esa declaración de DIM porque se tiene un error Primario
+            // ya no se sigue validando más esa declaración de DIM porque se tiene un error Primario
             if (!moduleEncontrado) {
                 errorManager.agregarError(ErrorCode.DIM_ANTES_DE_MODULE, linea, numeroLinea);
                 return;
             }
-            
-            
+
             validarDeclaracionDim(tokens, linea, numeroLinea);
             return;
         }
@@ -156,7 +149,63 @@ public class Validador {
         // ------------------------------------------------------------
         if (esConsoleWriteLine(tokens)) {
             validarConsoleWriteLine(tokens, linea, numeroLinea);
+            return;
         }
+
+        // ------------------------------------------------------------
+        // 7. Estructuras de control de Proyecto 2
+        // ------------------------------------------------------------
+        // Estas líneas se reconocen aquí para evitar falsos positivos,
+        // pero la validación estructural y semántica de los bloques
+        // la realiza BlockAnalyzer.
+        //
+        // If <condición> Then
+        if (primero.es(TokenType.Type.IF)) {
+            return;
+        }
+
+        // ElseIf <condición> Then
+        if (primero.es(TokenType.Type.ELSEIF)) {
+            return;
+        }
+
+        // Else
+        if (primero.es(TokenType.Type.ELSE)) {
+            return;
+        }
+
+        // End If
+        if (primero.es(TokenType.Type.END) &&
+            tokens.size() > 1 &&
+            tokens.get(1).es(TokenType.Type.IF)) {
+            return;
+        }
+
+        // While <condición>
+        if (primero.es(TokenType.Type.WHILE)) {
+            return;
+        }
+
+        // End While
+        if (primero.es(TokenType.Type.END) &&
+            tokens.size() > 1 &&
+            tokens.get(1).es(TokenType.Type.WHILE)) {
+            return;
+        }
+
+        // For <var> = <inicio> To <fin>
+        if (primero.es(TokenType.Type.FOR)) {
+            return;
+        }
+
+        // Next
+        if (primero.es(TokenType.Type.NEXT)) {
+            return;
+        }
+
+        // Cualquier otra línea que llegue aquí será tratada por
+        // otras capas (por ejemplo, TabladeExpresiones o diagnósticos
+        // adicionales si se integran en el futuro).
     }
 
     // ============================================================
@@ -177,8 +226,8 @@ public class Validador {
         // Validación del espacio exacto entre End y Module
         int indexEnd = linea.indexOf("End");
         int indexModule = linea.indexOf("Module");
-        
-        //se resta los indices de inicio y si la diferencia es distinta de 4
+
+        // se resta los indices de inicio y si la diferencia es distinta de 4
         if (indexModule - indexEnd != 4) {
             errorManager.agregarError(ErrorCode.ENDMODULE_ESPACIO_INCORRECTO, linea, numeroLinea);
             return;
@@ -189,7 +238,7 @@ public class Validador {
             errorManager.agregarError(ErrorCode.ENDMODULE_TIENE_TOKENS_EXTRA, linea, numeroLinea);
             return;
         }
-        //esta "bandera" indica que se ha validado ya un token como End Module
+        // esta "bandera" indica que se ha validado ya un token como End Module
         cantidadEndModule++;
         lineaEndModule = numeroLinea;
     }
@@ -263,9 +312,9 @@ public class Validador {
         }
 
         // Validación del espacio exacto entre "Module" y el nombre
-        //le pedimos el número donde empieza module ejemplo 0
-        //le pedimos el número donde empieza el proximo lexema 7
-        //restamos la y debe dar 7 si da más que eso es que hay espacios en medio
+        // le pedimos el número donde empieza module ejemplo 0
+        // le pedimos el número donde empieza el proximo lexema 7
+        // restamos la y debe dar 7 si da más que eso es que hay espacios en medio
         int indexModule = linea.indexOf("Module");
         int indexIdent = linea.indexOf(identificador.lexema);
 
@@ -353,7 +402,7 @@ public class Validador {
             errorManager.agregarError(ErrorCode.DECLARACION_INCOMPLETA, linea, numeroLinea);
             return;
         }
-        //Pasamos a revisar el próximo token para validar
+        // Pasamos a revisar el próximo token para validar
         Token identificador = tokens.get(1);
 
         // Validación del identificador
@@ -390,7 +439,7 @@ public class Validador {
         Token asToken = tokens.get(2);
 
         // Identificador con espacios (ej: "mi var As Integer")
-        //si lo que sigue es otro identificador quiere decir que hay un espacio y un identificador compuesto
+        // si lo que sigue es otro identificador quiere decir que hay un espacio y un identificador compuesto
         if (asToken.es(TokenType.Type.IDENTIFIER) &&
             tokens.size() > 3 &&
             tokens.get(3).es(TokenType.Type.AS)) {
@@ -430,9 +479,7 @@ public class Validador {
         }
 
         // Registrar variable en la tabla de símbolos
-        
         symbolTable.agregar(identificador.lexema, tipoLex);
-
 
         // Asignación opcional
         if (tokens.size() > 4) {
@@ -457,7 +504,8 @@ public class Validador {
             errorManager.agregarError(ErrorCode.TOKENS_EXTRA, linea, numeroLinea);
         }
     }
-    //tipos validos de variables
+
+    // tipos validos de variables
     private boolean esTipoValido(String tipo) {
         return tipo.equalsIgnoreCase("Integer") ||
                tipo.equalsIgnoreCase("String") ||
@@ -525,7 +573,7 @@ public class Validador {
         }
     }
 
-       private void validarOperacionMatematica(List<Token> tokens, String linea, int numeroLinea, Token tipoDeclarado) {
+    private void validarOperacionMatematica(List<Token> tokens, String linea, int numeroLinea, Token tipoDeclarado) {
 
         // Recorre todos los tokens a partir del valor inicial (posición 5),
         // validando que la expresión matemática solo contenga:
@@ -575,9 +623,7 @@ public class Validador {
                 }
 
                 // Solo se permiten variables de tipo Integer o Byte en operaciones numéricas
-               
                 String tipoVar = symbolTable.getTipo(t.lexema);
-
 
                 if (!tipoVar.equals("integer") && !tipoVar.equals("byte")) {
                     errorManager.agregarError(ErrorCode.OPERANDO_NO_NUMERICO, linea, numeroLinea);

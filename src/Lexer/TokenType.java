@@ -34,6 +34,23 @@ public class TokenType {
         WHILE("^WHILE$"),
         IMPORTS("^IMPORTS$"),
 
+        // Proyecto 2: nuevas palabras reservadas
+        FOR("^FOR$"),
+        NEXT("^NEXT$"),
+        TO("^TO$"),
+
+        // Operadores lógicos
+        AND("^AND$"),
+        OR("^OR$"),
+        NOT("^NOT$"),
+
+        // Operadores relacionales
+        OP_LT("^<$"),
+        OP_GT("^>$"),
+        OP_LTE("^<=$"),
+        OP_GTE("^>=$"),
+        OP_NEQ("^<>$"),
+
         // Tipos de datos
         TYPE_INTEGER("^INTEGER$"),
         TYPE_STRING("^STRING$"),
@@ -56,7 +73,9 @@ public class TokenType {
         OP_MULT("^\\*$"),
         OP_DIV("^/$"),
         OP_CONCAT("^&$"),
-        OP_INVALID("^==$"),   // patrón imposible, no es parte de vb
+
+        // Operador inválido detectado por el Lexer
+        OP_INVALID("^==$"),
 
         // ============================================================
         // SÍMBOLOS
