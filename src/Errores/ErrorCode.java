@@ -68,7 +68,7 @@ public enum ErrorCode {
     // BLOQUES — Errores en estructuras de control (Proyecto 2)
     // ============================================================
 
-            // ----- WHILE / WEND -----
+            // ----- WHILE / END WHILE -----
             WHILE_SIN_CONDICION(200, "La instrucción 'While' debe incluir una condición."),
             WHILE_CONDICION_INVALIDA(201, "La condición del While es inválida."),
             WHILE_CONDICION_NO_BOOLEAN(202, "La condición del While debe evaluar a un valor Boolean."),
@@ -76,9 +76,10 @@ public enum ErrorCode {
             WHILE_OPERADOR_RELACIONAL_INVALIDO(204, "Operador relacional inválido dentro de la condición del While."),
             WHILE_OPERADOR_LOGICO_INVALIDO(205, "Operador lógico inválido dentro de la condición del While."),
             WHILE_OPERANDO_INVALIDO(206, "Operando inválido dentro de la condición del While."),
-            WEND_SIN_WHILE(207, "Se encontró 'Wend' sin un bloque While correspondiente."),
-            WHILE_SIN_WEND(208, "El bloque While no tiene su correspondiente 'Wend'."),
+            WEND_SIN_WHILE(207, "Se encontró 'End While' sin un bloque While correspondiente."),
+            WHILE_SIN_WEND(208, "El bloque While no tiene su correspondiente 'End While'."),
             WHILE_VACIO(209, "El bloque While está vacío o solo contiene comentarios."),
+
 
             // ----- FOR / NEXT -----
             FOR_SIN_VARIABLE(210, "La instrucción 'For' debe incluir una variable de control."),
