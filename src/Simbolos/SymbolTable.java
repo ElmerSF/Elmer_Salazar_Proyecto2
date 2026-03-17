@@ -1,4 +1,5 @@
-/*UNED Informática Compiladores 3307
+/*
+UNED Informática Compiladores 3307
 Estudiante: Elmer Eduardo Salazar Flores 3-0426-0158
 I Cuatrimestre 2026
 
@@ -88,5 +89,29 @@ public class SymbolTable {
      */
     public void limpiar() {
         tablaSimbolos.clear();
+    }
+
+    // ============================================================
+    // REPRESENTACIÓN PARA ARCHIVO simbolos.txt
+    // ============================================================
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("=== TABLA DE SÍMBOLOS ===\n\n");
+
+        if (tablaSimbolos.isEmpty()) {
+            sb.append("(Sin variables declaradas)\n");
+            return sb.toString();
+        }
+
+        for (Simbolo s : tablaSimbolos.values()) {
+            sb.append("Nombre: ").append(s.getNombre()).append("\n");
+            sb.append("Tipo:   ").append(s.getTipo()).append("\n");
+            Object valor = s.getValor();
+            sb.append("Valor:  ").append(valor != null ? valor.toString() : "(sin asignar)").append("\n");
+            sb.append("----------------------------------------\n");
+        }
+
+        return sb.toString();
     }
 }
