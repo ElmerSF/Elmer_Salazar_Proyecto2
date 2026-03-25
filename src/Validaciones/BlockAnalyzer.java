@@ -3,35 +3,32 @@ UNED Informática Compiladores 3307
 Estudiante: Elmer Eduardo Salazar Flores 3-0426-0158
 I Cuatrimestre 2026
 
-Clase encargada de validar bloques de código (While, For, If).
-Este análisis se ejecuta ANTES del análisis línea por línea para detectar:
+Clase encargada de validar bloques de código (While, For, If) usando:
+ - TabladeExpresiones (regex) para la forma general de la línea
+ - Lexer/Token/TokenType para la validación semántica de la condición
+ - SymbolTable para tipos y declaraciones
 
+Este análisis se ejecuta ANTES del análisis línea por línea (Validador) y se
+enfoca en:
  - Bloques mal cerrados
  - Bloques vacíos
  - Estructuras incompletas
- - Condiciones mal formadas (versión alineada con rúbrica)
+ - Condiciones mal formadas (versión inicial)
+ - Prohibición de anidamiento de While, For e If según la rúbrica
 
-A diferencia del Validador, que trabaja instrucción por instrucción,
-BlockAnalyzer trabaja a nivel de bloques, pero reutilizando:
-
- - Lexer (para obtener tokens por línea)
- - SymbolTable (para tipos y existencia de variables)
- - ErrorCode (para mantener la misma tipificación de errores)
-
-No se duplican las validaciones ya realizadas en otras clases; aquí solo
-se cubren los aspectos de estructura de bloques requeridos en el Proyecto 2.
+Se usó apoyo de IA para revisión y pruebas del código así como ordenarlo
 */
 
 package Validaciones;
 
-import Errores.ErrorManager;
 import Errores.ErrorCode;
-import Simbolos.SymbolTable;
+import Errores.ErrorManager;
 import Lexer.Lexer;
 import Lexer.Token;
 import Lexer.TokenType;
+import Simbolos.SymbolTable;
+import Simbolos.TabladeExpresiones.Expresion;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class BlockAnalyzer {
@@ -51,92 +48,146 @@ public class BlockAnalyzer {
     // ============================================================
     public void analizarBloques(String[] lineas) {
 
-        // Tokenizamos todas las líneas una sola vez para no repetir trabajo
-        List<Token>[] tokensPorLinea = new ArrayList[lineas.length];
-
         for (int i = 0; i < lineas.length; i++) {
+
             String linea = lineas[i];
-            tokensPorLinea[i] = new ArrayList<>(lexer.tokenizar(linea));
-        }
+            String trim = linea.trim();
+            int numeroLinea = i + 1;
 
-        for (int i = 0; i < lineas.length; i++) {
+            Expresion expr = clasificarLinea(trim);
 
-            List<Token> tokens = tokensPorLinea[i];
+            switch (expr) {
 
-            if (tokens == null || tokens.isEmpty()) {
-                continue;
-            }
+                case WHILE:
+                    validarWhile(lineas, i);
+                    break;
 
-            Token primero = tokens.get(0);
+                case END_WHILE:
+                    // End While sin While correspondiente
+                    errorManager.agregarError(
+                            ErrorCode.WEND_SIN_WHILE,
+                            linea,
+                            numeroLinea
+                    );
+                    break;
 
-            // Comentarios de línea completa: no se analizan como bloque
-            if (primero.es(TokenType.Type.COMMENT)) {
-                continue;
-            }
+                case FOR:
+                    validarFor(lineas, i);
+                    break;
 
-            // Detectar inicio de bloque WHILE
-            if (primero.es(TokenType.Type.WHILE)) {
-                validarWhile(lineas, tokensPorLinea, i);
-            }
+                case NEXT:
+                    // Next sin For correspondiente
+                    errorManager.agregarError(
+                            ErrorCode.NEXT_SIN_FOR,
+                            linea,
+                            numeroLinea
+                    );
+                    break;
 
-            // Detectar inicio de bloque FOR
-            if (primero.es(TokenType.Type.FOR)) {
-                validarFor(lineas, tokensPorLinea, i);
-            }
+                case IF:
+                    validarIf(lineas, i);
+                    break;
 
-            // Detectar inicio de bloque IF
-            if (primero.es(TokenType.Type.IF)) {
-                validarIf(lineas, tokensPorLinea, i);
+                case ELSE:
+                    // Else sin If correspondiente
+                    errorManager.agregarError(
+                            ErrorCode.ELSE_SIN_IF,
+                            linea,
+                            numeroLinea
+                    );
+                    break;
+
+                case END_IF:
+                    // End If sin If correspondiente
+                    errorManager.agregarError(
+                            ErrorCode.ENDIF_SIN_IF,
+                            linea,
+                            numeroLinea
+                    );
+                    break;
+
+                default:
+                    // Otras líneas no son responsabilidad de BlockAnalyzer
+                    break;
             }
         }
     }
 
     // ============================================================
-    // VALIDACIÓN DE BLOQUE WHILE (Proyecto 2)
+    // CLASIFICACIÓN DE LÍNEAS USANDO TABLADEEXPRESIONES (REGEX)
     // ============================================================
-    private void validarWhile(String[] lineas,
-                              List<Token>[] tokensPorLinea,
-                              int indiceInicio) {
+    private Expresion clasificarLinea(String linea) {
 
-        int lineaInicio = indiceInicio + 1;
-        List<Token> tokensLinea = tokensPorLinea[indiceInicio];
+        for (Expresion e : Expresion.values()) {
+            if (e == Expresion.DESCONOCIDO) continue;
+            if (linea.matches(e.patron)) {
+                return e;
+            }
+        }
+        return Expresion.DESCONOCIDO;
+    }
+
+    private boolean esLineaVaciaOComentario(String linea) {
+        String trim = linea.trim();
+        return trim.isEmpty()
+                || trim.matches(Expresion.LINEA_VACIA.patron)
+                || trim.matches(Expresion.COMENTARIO.patron);
+    }
+
+    // ============================================================
+    // VALIDACIÓN DE BLOQUE WHILE
+    // ============================================================
+    private void validarWhile(String[] lineas, int indiceInicio) {
+
+        int numeroLineaInicio = indiceInicio + 1;
+        String lineaWhile = lineas[indiceInicio];
 
         // ------------------------------------------------------------
-        // 1. Validar condición del While (While <var> <op> <entero>)
+        // 1. Validar condición del While usando tokens
+        //    Forma general: While <var> <op> <entero>
         // ------------------------------------------------------------
-        // Rúbrica: variable declarada, tipo Integer, operador < > <= >= =, valor entero
-
-        if (tokensLinea.size() < 4) {
+        List<Token> tokens = lexer.tokenizar(lineaWhile);
+        if (tokens.isEmpty()) {
             errorManager.agregarError(
                     ErrorCode.WHILE_CONDICION_INVALIDA,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaWhile,
+                    numeroLineaInicio
             );
             return;
         }
 
-        Token tVar = tokensLinea.get(1);
-        Token tOp  = tokensLinea.get(2);
-        Token tVal = tokensLinea.get(3);
-
-        // Variable debe ser identificador
-        if (!tVar.es(TokenType.Type.IDENTIFIER)) {
+        // Buscar token WHILE
+        int idxWhile = buscarToken(tokens, TokenType.Type.WHILE, 0);
+        if (idxWhile == -1 || idxWhile == tokens.size() - 1) {
             errorManager.agregarError(
-                    ErrorCode.WHILE_CONDICION_INVALIDA,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    ErrorCode.WHILE_SIN_CONDICION,
+                    lineaWhile,
+                    numeroLineaInicio
             );
             return;
         }
 
-        String nombreVar = tVar.lexema;
+        // Variable después de WHILE
+        int idxVar = idxWhile + 1;
+        Token tokVar = tokens.get(idxVar);
+
+        if (!tokVar.es(TokenType.Type.IDENTIFIER)) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_CONDICION_INVALIDA,
+                    lineaWhile,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        String nombreVar = tokVar.lexema;
 
         // Variable debe estar declarada
         if (!symbolTable.existe(nombreVar)) {
             errorManager.agregarError(
                     ErrorCode.WHILE_IDENTIFICADOR_NO_DECLARADO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaWhile,
+                    numeroLineaInicio
             );
             return;
         }
@@ -144,38 +195,45 @@ public class BlockAnalyzer {
         // Variable debe ser Integer o Byte
         String tipoVar = symbolTable.getTipo(nombreVar);
         if (tipoVar == null ||
-            (!tipoVar.equalsIgnoreCase("Integer") &&
-             !tipoVar.equalsIgnoreCase("Byte"))) {
+                (!tipoVar.equalsIgnoreCase("Integer") &&
+                 !tipoVar.equalsIgnoreCase("Byte"))) {
 
             errorManager.agregarError(
                     ErrorCode.WHILE_OPERANDO_INVALIDO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaWhile,
+                    numeroLineaInicio
             );
             return;
         }
 
-        // Operador relacional válido
-        if (!(tOp.es(TokenType.Type.OP_LT)  ||
-              tOp.es(TokenType.Type.OP_GT)  ||
-              tOp.es(TokenType.Type.OP_LTE) ||
-              tOp.es(TokenType.Type.OP_GTE) ||
-              tOp.es(TokenType.Type.OP_ASSIGN))) {
-
+        // Buscar operador relacional
+        int idxOp = buscarOperadorRelacional(tokens, idxVar + 1);
+        if (idxOp == -1) {
             errorManager.agregarError(
                     ErrorCode.WHILE_OPERADOR_RELACIONAL_INVALIDO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaWhile,
+                    numeroLineaInicio
             );
             return;
         }
 
-        // Valor entero
-        if (!tVal.es(TokenType.Type.NUMBER) || tVal.lexema.contains(".")) {
+        // Operando derecho (se espera número entero)
+        int idxValor = idxOp + 1;
+        if (idxValor >= tokens.size()) {
+            errorManager.agregarError(
+                    ErrorCode.WHILE_CONDICION_INVALIDA,
+                    lineaWhile,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        Token tokValor = tokens.get(idxValor);
+        if (!tokValor.es(TokenType.Type.NUMBER) || tokValor.lexema.contains(".")) {
             errorManager.agregarError(
                     ErrorCode.WHILE_OPERANDO_INVALIDO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaWhile,
+                    numeroLineaInicio
             );
             return;
         }
@@ -188,24 +246,23 @@ public class BlockAnalyzer {
 
         for (int i = indiceInicio + 1; i < lineas.length; i++) {
 
-            List<Token> tokens = tokensPorLinea[i];
-            if (tokens == null || tokens.isEmpty()) {
-                continue;
-            }
+            String linea = lineas[i];
+            String trim = linea.trim();
+            int numLinea = i + 1;
 
-            Token primero = tokens.get(0);
+            Expresion expr = clasificarLinea(trim);
 
-            // No se permiten While anidados (según rúbrica)
-            if (primero.es(TokenType.Type.WHILE)) {
+            if (expr == Expresion.WHILE) {
+                // No se permiten While anidados
                 errorManager.agregarError(
                         ErrorCode.BLOQUE_DESBALANCEADO,
-                        lineas[i],
-                        i + 1
+                        linea,
+                        numLinea
                 );
                 return;
             }
 
-            if (esEndWhile(tokens)) {
+            if (expr == Expresion.END_WHILE) {
                 encontradoEnd = true;
                 indiceEnd = i;
                 break;
@@ -215,8 +272,8 @@ public class BlockAnalyzer {
         if (!encontradoEnd) {
             errorManager.agregarError(
                     ErrorCode.WHILE_SIN_WEND,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaWhile,
+                    numeroLineaInicio
             );
             return;
         }
@@ -227,139 +284,147 @@ public class BlockAnalyzer {
         boolean tieneCodigo = false;
 
         for (int i = indiceInicio + 1; i < indiceEnd; i++) {
-
-            List<Token> tokens = tokensPorLinea[i];
-            if (tokens == null || tokens.isEmpty()) {
-                continue;
+            if (!esLineaVaciaOComentario(lineas[i])) {
+                tieneCodigo = true;
+                break;
             }
-
-            Token primero = tokens.get(0);
-
-            // Se ignoran líneas vacías y comentarios
-            if (primero.es(TokenType.Type.COMMENT)) {
-                continue;
-            }
-
-            tieneCodigo = true;
-            break;
         }
 
         if (!tieneCodigo) {
             errorManager.agregarError(
                     ErrorCode.WHILE_VACIO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaWhile,
+                    numeroLineaInicio
             );
         }
     }
 
-    private boolean esEndWhile(List<Token> tokens) {
-        if (tokens.size() < 2) return false;
-        return tokens.get(0).es(TokenType.Type.END) &&
-               tokens.get(1).es(TokenType.Type.WHILE);
-    }
-
     // ============================================================
-    // VALIDACIÓN DE BLOQUE FOR (Proyecto 2)
+    // VALIDACIÓN DE BLOQUE FOR
     // ============================================================
-    private void validarFor(String[] lineas,
-                            List<Token>[] tokensPorLinea,
-                            int indiceInicio) {
+    private void validarFor(String[] lineas, int indiceInicio) {
 
-        int lineaInicio = indiceInicio + 1;
-        List<Token> tokensLinea = tokensPorLinea[indiceInicio];
+        int numeroLineaInicio = indiceInicio + 1;
+        String lineaFor = lineas[indiceInicio];
 
-        // ------------------------------------------------------------
-        // 1. Validar cabecera: For variable = valor_inicial To valor_final
-        // ------------------------------------------------------------
-        if (tokensLinea.size() < 6) {
-            errorManager.agregarError(
-                    ErrorCode.FOR_SIN_VALOR_FINAL,
-                    lineas[indiceInicio],
-                    lineaInicio
-            );
-            return;
-        }
-
-        Token tFor  = tokensLinea.get(0);
-        Token tVar  = tokensLinea.get(1);
-        Token tEq   = tokensLinea.get(2);
-        Token tIni  = tokensLinea.get(3);
-        Token tTo   = tokensLinea.get(4);
-        Token tFin  = tokensLinea.get(5);
-
-        // Variable de control
-        if (!tVar.es(TokenType.Type.IDENTIFIER)) {
+        List<Token> tokens = lexer.tokenizar(lineaFor);
+        if (tokens.isEmpty()) {
             errorManager.agregarError(
                     ErrorCode.FOR_SIN_VARIABLE,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
 
-        String nombreVar = tVar.lexema;
+        // Buscar FOR
+        int idxFor = buscarToken(tokens, TokenType.Type.FOR, 0);
+        if (idxFor == -1 || idxFor == tokens.size() - 1) {
+            errorManager.agregarError(
+                    ErrorCode.FOR_SIN_VARIABLE,
+                    lineaFor,
+                    numeroLineaInicio
+            );
+            return;
+        }
 
-        // Variable debe estar declarada
+        // Variable de control
+        int idxVar = idxFor + 1;
+        Token tokVar = tokens.get(idxVar);
+
+        if (!tokVar.es(TokenType.Type.IDENTIFIER)) {
+            errorManager.agregarError(
+                    ErrorCode.FOR_SIN_VARIABLE,
+                    lineaFor,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        String nombreVar = tokVar.lexema;
+
         if (!symbolTable.existe(nombreVar)) {
             errorManager.agregarError(
                     ErrorCode.FOR_VARIABLE_NO_DECLARADA,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
 
-        // Variable debe ser numérica
         String tipoVar = symbolTable.getTipo(nombreVar);
         if (tipoVar == null ||
-            (!tipoVar.equalsIgnoreCase("Integer") &&
-             !tipoVar.equalsIgnoreCase("Byte"))) {
+                (!tipoVar.equalsIgnoreCase("Integer") &&
+                 !tipoVar.equalsIgnoreCase("Byte"))) {
 
             errorManager.agregarError(
                     ErrorCode.FOR_VARIABLE_NO_NUMERICA,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
 
-        // Debe existir '='
-        if (!tEq.es(TokenType.Type.OP_ASSIGN)) {
+        // '='
+        int idxIgual = buscarToken(tokens, TokenType.Type.OP_ASSIGN, idxVar + 1);
+        if (idxIgual == -1) {
             errorManager.agregarError(
                     ErrorCode.FOR_SIN_IGUAL,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
 
-        // Valor inicial entero
-        if (!tIni.es(TokenType.Type.NUMBER) || tIni.lexema.contains(".")) {
+        // Valor inicial
+        int idxValorInicial = buscarNumero(tokens, idxIgual + 1);
+        if (idxValorInicial == -1) {
+            errorManager.agregarError(
+                    ErrorCode.FOR_SIN_VALOR_INICIAL,
+                    lineaFor,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        Token tokIni = tokens.get(idxValorInicial);
+        if (!tokIni.es(TokenType.Type.NUMBER) || tokIni.lexema.contains(".")) {
             errorManager.agregarError(
                     ErrorCode.FOR_VALOR_INICIAL_INVALIDO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
 
-        // Palabra reservada To
-        if (!tTo.es(TokenType.Type.TO)) {
+        // TO
+        int idxTo = buscarToken(tokens, TokenType.Type.TO, idxValorInicial + 1);
+        if (idxTo == -1) {
             errorManager.agregarError(
                     ErrorCode.FOR_SIN_TO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
 
-        // Valor final entero
-        if (!tFin.es(TokenType.Type.NUMBER) || tFin.lexema.contains(".")) {
+        // Valor final
+        int idxValorFinal = buscarNumero(tokens, idxTo + 1);
+        if (idxValorFinal == -1) {
+            errorManager.agregarError(
+                    ErrorCode.FOR_SIN_VALOR_FINAL,
+                    lineaFor,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        Token tokFin = tokens.get(idxValorFinal);
+        if (!tokFin.es(TokenType.Type.NUMBER) || tokFin.lexema.contains(".")) {
             errorManager.agregarError(
                     ErrorCode.FOR_VALOR_FINAL_INVALIDO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
@@ -372,24 +437,23 @@ public class BlockAnalyzer {
 
         for (int i = indiceInicio + 1; i < lineas.length; i++) {
 
-            List<Token> tokens = tokensPorLinea[i];
-            if (tokens == null || tokens.isEmpty()) {
-                continue;
-            }
+            String linea = lineas[i];
+            String trim = linea.trim();
+            int numLinea = i + 1;
 
-            Token primero = tokens.get(0);
+            Expresion expr = clasificarLinea(trim);
 
-            // No se permiten For anidados
-            if (primero.es(TokenType.Type.FOR)) {
+            if (expr == Expresion.FOR) {
+                // No se permiten For anidados
                 errorManager.agregarError(
                         ErrorCode.BLOQUE_DESBALANCEADO,
-                        lineas[i],
-                        i + 1
+                        linea,
+                        numLinea
                 );
                 return;
             }
 
-            if (primero.es(TokenType.Type.NEXT)) {
+            if (expr == Expresion.NEXT) {
                 encontradoNext = true;
                 indiceNext = i;
                 break;
@@ -399,8 +463,8 @@ public class BlockAnalyzer {
         if (!encontradoNext) {
             errorManager.agregarError(
                     ErrorCode.FOR_SIN_NEXT,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
             return;
         }
@@ -411,191 +475,211 @@ public class BlockAnalyzer {
         boolean tieneCodigo = false;
 
         for (int i = indiceInicio + 1; i < indiceNext; i++) {
-
-            List<Token> tokens = tokensPorLinea[i];
-            if (tokens == null || tokens.isEmpty()) {
-                continue;
+            if (!esLineaVaciaOComentario(lineas[i])) {
+                tieneCodigo = true;
+                break;
             }
-
-            Token primero = tokens.get(0);
-
-            if (primero.es(TokenType.Type.COMMENT)) {
-                continue;
-            }
-
-            tieneCodigo = true;
-            break;
         }
 
         if (!tieneCodigo) {
             errorManager.agregarError(
                     ErrorCode.FOR_VACIO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaFor,
+                    numeroLineaInicio
             );
         }
     }
 
     // ============================================================
-    // VALIDACIÓN DE BLOQUE IF (Proyecto 2)
+    // VALIDACIÓN DE BLOQUE IF
     // ============================================================
-    private void validarIf(String[] lineas,
-                           List<Token>[] tokensPorLinea,
-                           int indiceInicio) {
+    private void validarIf(String[] lineas, int indiceInicio) {
 
-        int lineaInicio = indiceInicio + 1;
-        List<Token> tokensLinea = tokensPorLinea[indiceInicio];
+        int numeroLineaInicio = indiceInicio + 1;
+        String lineaIf = lineas[indiceInicio];
 
-        // ------------------------------------------------------------
-        // 1. Validar que exista condición y THEN en la misma línea
-        // ------------------------------------------------------------
-        int indiceThen = -1;
-
-        for (int i = 0; i < tokensLinea.size(); i++) {
-            if (tokensLinea.get(i).es(TokenType.Type.THEN)) {
-                indiceThen = i;
-                break;
-            }
-        }
-
-        if (indiceThen == -1) {
-            errorManager.agregarError(
-                    ErrorCode.IF_SIN_THEN,
-                    lineas[indiceInicio],
-                    lineaInicio
-            );
-            return;
-        }
-
-        // Debe haber al menos un token entre IF y THEN (condición no vacía)
-        if (indiceThen == 1) {
+        List<Token> tokens = lexer.tokenizar(lineaIf);
+        if (tokens.isEmpty()) {
             errorManager.agregarError(
                     ErrorCode.IF_SIN_CONDICION,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaIf,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        // IF
+        int idxIf = buscarToken(tokens, TokenType.Type.IF, 0);
+        if (idxIf == -1) {
+            errorManager.agregarError(
+                    ErrorCode.IF_SIN_CONDICION,
+                    lineaIf,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        // THEN
+        int idxThen = buscarToken(tokens, TokenType.Type.THEN, idxIf + 1);
+        if (idxThen == -1) {
+            errorManager.agregarError(
+                    ErrorCode.IF_SIN_THEN,
+                    lineaIf,
+                    numeroLineaInicio
+            );
+            return;
+        }
+
+        // Debe existir algo entre IF y THEN (condición no vacía)
+        if (idxThen == idxIf + 1) {
+            errorManager.agregarError(
+                    ErrorCode.IF_SIN_CONDICION,
+                    lineaIf,
+                    numeroLineaInicio
             );
             return;
         }
 
         // ------------------------------------------------------------
-        // 2. Buscar Else (opcional) y End If correspondiente
+        // 2. Buscar Else y End If correspondientes
         // ------------------------------------------------------------
-        boolean encontradoEndIf = false;
-        int indiceEndIf = -1;
         int indiceElse = -1;
+        int indiceEndIf = -1;
 
         for (int i = indiceInicio + 1; i < lineas.length; i++) {
 
-            List<Token> tokens = tokensPorLinea[i];
-            if (tokens == null || tokens.isEmpty()) {
-                continue;
-            }
+            String linea = lineas[i];
+            String trim = linea.trim();
+            int numLinea = i + 1;
 
-            Token primero = tokens.get(0);
+            Expresion expr = clasificarLinea(trim);
 
-            // No se permiten IF anidados
-            if (primero.es(TokenType.Type.IF)) {
+            if (expr == Expresion.IF) {
+                // No se permiten IF anidados
                 errorManager.agregarError(
                         ErrorCode.BLOQUE_DESBALANCEADO,
-                        lineas[i],
-                        i + 1
+                        linea,
+                        numLinea
                 );
                 return;
             }
 
-            // Else
-            if (primero.es(TokenType.Type.ELSE)) {
-                if (indiceElse == -1) {
-                    indiceElse = i;
-                }
+            if (expr == Expresion.ELSE && indiceElse == -1) {
+                indiceElse = i;
                 continue;
             }
 
-            // End If
-            if (esEndIf(tokens)) {
-                encontradoEndIf = true;
+            if (expr == Expresion.END_IF) {
                 indiceEndIf = i;
                 break;
             }
         }
 
-        if (!encontradoEndIf) {
+        if (indiceEndIf == -1) {
             errorManager.agregarError(
                     ErrorCode.IF_SIN_ENDIF,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaIf,
+                    numeroLineaInicio
             );
             return;
         }
 
         // ------------------------------------------------------------
-        // 3. Validar que exista al menos una línea de código después de THEN
+        // 3. Validar líneas de código después de THEN y después de ELSE
         // ------------------------------------------------------------
-        int limiteThen = (indiceElse != -1) ? indiceElse : indiceEndIf;
+
+        // Caso 1: IF ... THEN ... END IF (sin ELSE)
+        if (indiceElse == -1) {
+
+            boolean tieneCodigoThen = false;
+
+            for (int i = indiceInicio + 1; i < indiceEndIf; i++) {
+                if (!esLineaVaciaOComentario(lineas[i])) {
+                    tieneCodigoThen = true;
+                    break;
+                }
+            }
+
+            if (!tieneCodigoThen) {
+                errorManager.agregarError(
+                        ErrorCode.IF_VACIO,
+                        lineaIf,
+                        numeroLineaInicio
+                );
+            }
+
+            return;
+        }
+
+        // Caso 2: IF ... THEN ... ELSE ... END IF
         boolean tieneCodigoThen = false;
+        boolean tieneCodigoElse = false;
 
-        for (int i = indiceInicio + 1; i < limiteThen; i++) {
-
-            List<Token> tokens = tokensPorLinea[i];
-            if (tokens == null || tokens.isEmpty()) {
-                continue;
+        for (int i = indiceInicio + 1; i < indiceElse; i++) {
+            if (!esLineaVaciaOComentario(lineas[i])) {
+                tieneCodigoThen = true;
+                break;
             }
+        }
 
-            Token primero = tokens.get(0);
-
-            if (primero.es(TokenType.Type.COMMENT)) {
-                continue;
+        for (int i = indiceElse + 1; i < indiceEndIf; i++) {
+            if (!esLineaVaciaOComentario(lineas[i])) {
+                tieneCodigoElse = true;
+                break;
             }
-
-            tieneCodigoThen = true;
-            break;
         }
 
         if (!tieneCodigoThen) {
             errorManager.agregarError(
                     ErrorCode.IF_VACIO,
-                    lineas[indiceInicio],
-                    lineaInicio
+                    lineaIf,
+                    numeroLineaInicio
             );
         }
 
-        // ------------------------------------------------------------
-        // 4. Si hay ELSE, validar que tenga al menos una línea de código
-        // ------------------------------------------------------------
-        if (indiceElse != -1) {
-
-            boolean tieneCodigoElse = false;
-
-            for (int i = indiceElse + 1; i < indiceEndIf; i++) {
-
-                List<Token> tokens = tokensPorLinea[i];
-                if (tokens == null || tokens.isEmpty()) {
-                    continue;
-                }
-
-                Token primero = tokens.get(0);
-
-                if (primero.es(TokenType.Type.COMMENT)) {
-                    continue;
-                }
-
-                tieneCodigoElse = true;
-                break;
-            }
-
-            if (!tieneCodigoElse) {
-                errorManager.agregarError(
-                        ErrorCode.IF_VACIO,
-                        lineas[indiceElse],
-                        indiceElse + 1
-                );
-            }
+        if (!tieneCodigoElse) {
+            errorManager.agregarError(
+                    ErrorCode.IF_VACIO,
+                    lineas[indiceElse],
+                    indiceElse + 1
+            );
         }
     }
 
-    private boolean esEndIf(List<Token> tokens) {
-        if (tokens.size() < 2) return false;
-        return tokens.get(0).es(TokenType.Type.END) &&
-               tokens.get(1).es(TokenType.Type.IF);
+    // ============================================================
+    // HELPERS PARA BÚSQUEDA EN LISTAS DE TOKENS
+    // ============================================================
+    private int buscarToken(List<Token> tokens, TokenType.Type tipo, int desde) {
+        for (int i = desde; i < tokens.size(); i++) {
+            if (tokens.get(i).es(tipo)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int buscarNumero(List<Token> tokens, int desde) {
+        for (int i = desde; i < tokens.size(); i++) {
+            Token t = tokens.get(i);
+            if (t.es(TokenType.Type.NUMBER)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private int buscarOperadorRelacional(List<Token> tokens, int desde) {
+        for (int i = desde; i < tokens.size(); i++) {
+            Token t = tokens.get(i);
+            if (t.es(TokenType.Type.OP_LT) ||
+                t.es(TokenType.Type.OP_GT) ||
+                t.es(TokenType.Type.OP_LTE) ||
+                t.es(TokenType.Type.OP_GTE) ||
+                t.es(TokenType.Type.OP_ASSIGN) ||
+                t.es(TokenType.Type.OP_NEQ)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
