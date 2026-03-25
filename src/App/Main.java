@@ -1,14 +1,3 @@
-/*
-UNED Informática Compiladores 3307
-Estudiante: Elmer Eduardo Salazar Flores 3-0426-0158
-I Cuatrimestre 2026
-Clase principal donde se inicia
-
-ASCII art basado en colecciones anónimas de:
-ASCII Art Archive. (n.d.). ASCII Art Gallery. https://www.asciiart.eu/gallery
-Modificado para uso en el Proyecto 1 de Compiladores (UNED).
-*/
-
 package App;
 
 import Lexer.Token;
@@ -48,12 +37,13 @@ public class Main {
 
         String archivo = args[0];
 
-        //valida el tipo de extensión del archivo
+        // valida el tipo de extensión del archivo
         if (!archivo.toLowerCase().endsWith(".vb")) {
             System.out.println("El archivo debe tener extensión .vb");
             return;
         }
-        //detalle informativo para el usuario
+
+        // detalle informativo para el usuario
         System.out.println("Ubicación actual: " + directorio);
         System.out.println("Archivo recibido: " + archivo + "\n");
 
@@ -74,7 +64,7 @@ public class Main {
         System.out.println("\033[32m                        (__/ \\__)");
         System.out.println("\033[0m");
 
-        // Infraestructura (instanciamos las diferentes clases)
+        // Infraestructura
         FileManager fm = new FileManager();
         Lexer lexer = new Lexer();
         SymbolTable symbolTable = new SymbolTable();
@@ -99,31 +89,35 @@ public class Main {
         // BARRA DE PROGRESO 
         // ------------------------------------------------------------
         mostrarBarraProgreso();
-        // === PROYECTO 2: Análisis de estructuras de control ===
-            BlockAnalyzer blockAnalyzer = new BlockAnalyzer(errorManager, symbolTable);
-            blockAnalyzer.analizarBloques(lineas);
-            // =======================================================
 
-
-            // Procesar línea por línea
-            for (int i = 0; i < lineas.length; i++) {
-
+        // ------------------------------------------------------------
+        // PROCESO PRINCIPAL: LÉXICO + SINTÁCTICO/SEMÁNTICO POR LÍNEA
+        // ------------------------------------------------------------
+        for (int i = 0; i < lineas.length; i++) {
 
             String linea = lineas[i];
             int numeroLinea = i + 1;
 
-            // 1. Clasificar línea completa
-         //   TabladeExpresiones.Expresion tipoLinea = clasificarLinea(linea);
+            // 1. (Opcional) Clasificación por regex
+            // TabladeExpresiones.Expresion tipoLinea = clasificarLinea(linea);
 
             // 2. Tokenizar
             List<Token> tokens = lexer.tokenizar(linea);
 
-            // 3. Validar
+            // 3. Validar línea (Proyecto 1 + reglas base de Proyecto 2)
             validador.validarLinea(tokens, linea, numeroLinea);
         }
 
-        // Validación final del archivo
+        // Validación final del archivo (End Module, etc.)
         validador.validarFinDeArchivo(lineas.length);
+
+        // ------------------------------------------------------------
+        // PROYECTO 2: ANÁLISIS DE BLOQUES (WHILE / FOR / IF)
+        // Se ejecuta DESPUÉS de que la tabla de símbolos está llena
+        // y de que las validaciones de línea ya se realizaron.
+        // ------------------------------------------------------------
+        BlockAnalyzer blockAnalyzer = new BlockAnalyzer(errorManager, symbolTable);
+        blockAnalyzer.analizarBloques(lineas);
 
         // Escribir errores
         fm.escribirErrores(archivoLog, errorManager);
@@ -151,7 +145,6 @@ public class Main {
     // ============================================================
     private static TabladeExpresiones.Expresion clasificarLinea(String linea) {
         for (TabladeExpresiones.Expresion exp : TabladeExpresiones.Expresion.values()) {
-            //ser revisa con cual de los patrones se identifica
             if (linea.matches(exp.patron)) {
                 return exp;
             }
