@@ -95,6 +95,8 @@ public enum ErrorCode {
             NEXT_SIN_FOR(220, "Se encontró 'Next' sin un bloque For correspondiente."),
             FOR_SIN_NEXT(221, "El bloque For no tiene su correspondiente 'Next'."),
             FOR_VACIO(222, "El bloque For está vacío."),
+            FOR_ANIDADO(223, "No se permite un bloque For dentro de otro bloque For."),
+
 
             // ----- IF / ELSE / END IF -----
             IF_SIN_CONDICION(230, "La instrucción 'If' debe incluir una condición."),
@@ -110,12 +112,24 @@ public enum ErrorCode {
             ELSE_SIN_IF(240, "Se encontró 'Else' sin un bloque If correspondiente."),
             ELSE_CON_TOKENS_EXTRA(241, "La instrucción 'Else' contiene tokens adicionales no permitidos."),
             IF_VACIO(242, "El bloque If está vacío."),
+            ELSE_VACIO(243, "El bloque Else está vacío."),
+            ELSEIF_SIN_CONDICION(244, "La instrucción ElseIf debe incluir una condición."),
+            ELSEIF_SIN_THEN(245, "La instrucción ElseIf debe finalizar con la palabra reservada 'Then'."),
+            ELSEIF_CONDICION_INVALIDA(246, "La condición del ElseIf es inválida."),
+            ELSEIF_OPERANDO_INVALIDO(247, "Operando inválido dentro de la condición del ElseIf."),
+            ELSEIF_OPERADOR_INVALIDO(248, "Operador inválido dentro de la condición del ElseIf."),
+            IF_ANIDADO(249, "No se permite un bloque If dentro de otro bloque If."),
+
 
 
         // ----- ERRORES GENERALES DE BLOQUES -----
         BLOQUE_DESBALANCEADO(250, "Las estructuras de control están desbalanceadas."),
         BLOQUE_DESCONOCIDO(251, "Se encontró una estructura de control desconocida."),
-        BLOQUE_CON_TOKENS_EXTRA(252, "La instrucción contiene tokens adicionales no permitidos.");
+        BLOQUE_CON_TOKENS_EXTRA(252, "La instrucción contiene tokens adicionales no permitidos."),
+        FOR_CON_TOKENS_EXTRA(253, "La instrucción For contiene tokens adicionales no permitidos."),
+        WHILE_CON_TOKENS_EXTRA(254, "La instrucción While contiene tokens adicionales no permitidos."),
+        IF_CON_TOKENS_EXTRA(255, "La instrucción If contiene tokens adicionales no permitidos.");
+
 
     // ============================================================
     // CAMPOS INTERNOS
