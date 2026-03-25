@@ -53,6 +53,17 @@ public class ErrorManager {
     public List<Error> getErrores() {
         return errores;
     }
+    // ============================================================
+    // CONSULTA: ¿Hay errores en una línea específica?
+    // ============================================================
+    public boolean hayErroresEnLinea(int numeroLinea) {
+        for (Error e : errores) {
+            if (e.getNumeroLinea() == numeroLinea) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // ============================================================
     // GENERACIÓN DEL ARCHIVO LOG

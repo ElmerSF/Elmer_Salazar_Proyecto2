@@ -1,3 +1,27 @@
+/*
+UNED Informática Compiladores 3307
+Estudiante: Elmer Eduardo Salazar Flores 3-0426-0158
+I Cuatrimestre 2026
+
+Clase principal del proyecto. 
+Se encarga de:
+ - Leer el archivo fuente .vb
+ - Ejecutar el análisis léxico (Lexer)
+ - Ejecutar el análisis sintáctico/semántico por línea (Validador)
+ - Ejecutar el análisis de estructuras de control (BlockAnalyzer)
+ - Generar archivos de depuración (tokens, símbolos, clasificación)
+ - Generar el archivo .log con todos los errores detectados
+
+Este flujo respeta el orden lógico de un compilador:
+ 1. Tokenización
+ 2. Validación sintáctica y semántica de línea
+ 3. Validación de bloques (While, For, If)
+ 4. Reporte de errores
+
+Se usó apoyo de IA para revisión y pruebas del código así como ordenarlo.
+*/
+
+
 package App;
 
 import Lexer.Token;

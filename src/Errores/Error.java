@@ -39,6 +39,10 @@ public class Error {
         this.numeroLinea = numeroLinea;
         this.lineaOriginal = lineaOriginal;
     }
+    public int getNumeroLinea() {
+    return numeroLinea;
+    }
+
 
     /**
      * Devuelve el número del error según el enum ErrorCode.

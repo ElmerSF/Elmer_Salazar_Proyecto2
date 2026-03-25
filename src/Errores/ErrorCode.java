@@ -160,7 +160,7 @@ public enum ErrorCode {
     public String getMensaje() {
         return mensaje;
     }
-
+    
     /**
      * Representación legible del error.
      * Ejemplo: "Error 102. Se esperaba la palabra reservada 'As'."
