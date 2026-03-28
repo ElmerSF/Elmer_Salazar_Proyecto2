@@ -49,6 +49,14 @@ public enum ErrorCode {
     COMENTARIO_INVALIDO(124, "Los comentarios solo son válidos si la línea inicia con un apóstrofe (')."),
 
     // ============================================================
+    // NUEVO ERROR — LÍNEAS NO RECONOCIDAS / COMENTARIOS SIN '
+    // ============================================================
+    LINEA_INVALIDA_O_COMENTARIO_SIN_APOSTROFE(
+        160,
+        "La línea no corresponde a ninguna estructura válida ni a un comentario que inicie con apóstrofe (')."
+    ),
+
+    // ============================================================
     // MODULE — Errores en la declaración del módulo principal
     // ============================================================
     MODULE_ANTES_DE_IMPORTS(130, "La sentencia Module debe aparecer después de Imports."),
@@ -63,108 +71,87 @@ public enum ErrorCode {
     ENDMODULE_DUPLICADO(142, "Se encontró más de un 'End Module' válido."),
     ENDMODULE_NO_ES_ULTIMA_LINEA(143, "'End Module' debe ser la última línea con contenido del archivo."),
 
-    
-        // ============================================================
+    // ============================================================
     // BLOQUES — Errores en estructuras de control (Proyecto 2)
     // ============================================================
 
-            // ----- WHILE / END WHILE -----
-            WHILE_SIN_CONDICION(200, "La instrucción 'While' debe incluir una condición."),
-            WHILE_CONDICION_INVALIDA(201, "La condición del While es inválida."),
-            WHILE_CONDICION_NO_BOOLEAN(202, "La condición del While debe evaluar a un valor Boolean."),
-            WHILE_IDENTIFICADOR_NO_DECLARADO(203, "Se usa un identificador no declarado dentro de la condición del While."),
-            WHILE_OPERADOR_RELACIONAL_INVALIDO(204, "Operador relacional inválido dentro de la condición del While."),
-            WHILE_OPERADOR_LOGICO_INVALIDO(205, "Operador lógico inválido dentro de la condición del While."),
-            WHILE_OPERANDO_INVALIDO(206, "Operando inválido dentro de la condición del While."),
-            WEND_SIN_WHILE(207, "Se encontró 'End While' sin un bloque While correspondiente."),
-            WHILE_SIN_WEND(208, "El bloque While no tiene su correspondiente 'End While'."),
-            WHILE_VACIO(209, "El bloque While está vacío o solo contiene comentarios."),
+    // ----- WHILE / END WHILE -----
+    WHILE_SIN_CONDICION(200, "La instrucción 'While' debe incluir una condición."),
+    WHILE_CONDICION_INVALIDA(201, "La condición del While es inválida."),
+    WHILE_CONDICION_NO_BOOLEAN(202, "La condición del While debe evaluar a un valor Boolean."),
+    WHILE_IDENTIFICADOR_NO_DECLARADO(203, "Se usa un identificador no declarado dentro de la condición del While."),
+    WHILE_OPERADOR_RELACIONAL_INVALIDO(204, "Operador relacional inválido dentro de la condición del While."),
+    WHILE_OPERADOR_LOGICO_INVALIDO(205, "Operador lógico inválido dentro de la condición del While."),
+    WHILE_OPERANDO_INVALIDO(206, "Operando inválido dentro de la condición del While."),
+    WEND_SIN_WHILE(207, "Se encontró 'End While' sin un bloque While correspondiente."),
+    WHILE_SIN_WEND(208, "El bloque While no tiene su correspondiente 'End While'."),
+    WHILE_VACIO(209, "El bloque While está vacío o solo contiene comentarios."),
 
+    // ----- FOR / NEXT -----
+    FOR_SIN_VARIABLE(210, "La instrucción 'For' debe incluir una variable de control."),
+    FOR_VARIABLE_NO_DECLARADA(211, "La variable usada en el For no ha sido declarada."),
+    FOR_SIN_IGUAL(212, "Falta el operador '=' en la instrucción For."),
+    FOR_SIN_VALOR_INICIAL(213, "Falta el valor inicial en la instrucción For."),
+    FOR_SIN_TO(214, "Falta la palabra reservada 'To' en la instrucción For."),
+    FOR_SIN_VALOR_FINAL(215, "Falta el valor final en la instrucción For."),
+    FOR_VALOR_INICIAL_INVALIDO(216, "El valor inicial del For es inválido."),
+    FOR_VALOR_FINAL_INVALIDO(217, "El valor final del For es inválido."),
+    FOR_VARIABLE_NO_NUMERICA(218, "La variable del For debe ser de tipo Integer o Byte."),
+    FOR_VALORES_NO_NUMERICOS(219, "Los valores del For deben ser numéricos."),
+    NEXT_SIN_FOR(220, "Se encontró 'Next' sin un bloque For correspondiente."),
+    FOR_SIN_NEXT(221, "El bloque For no tiene su correspondiente 'Next'."),
+    FOR_VACIO(222, "El bloque For está vacío."),
+    FOR_ANIDADO(223, "No se permite un bloque For dentro de otro bloque For."),
 
-            // ----- FOR / NEXT -----
-            FOR_SIN_VARIABLE(210, "La instrucción 'For' debe incluir una variable de control."),
-            FOR_VARIABLE_NO_DECLARADA(211, "La variable usada en el For no ha sido declarada."),
-            FOR_SIN_IGUAL(212, "Falta el operador '=' en la instrucción For."),
-            FOR_SIN_VALOR_INICIAL(213, "Falta el valor inicial en la instrucción For."),
-            FOR_SIN_TO(214, "Falta la palabra reservada 'To' en la instrucción For."),
-            FOR_SIN_VALOR_FINAL(215, "Falta el valor final en la instrucción For."),
-            FOR_VALOR_INICIAL_INVALIDO(216, "El valor inicial del For es inválido."),
-            FOR_VALOR_FINAL_INVALIDO(217, "El valor final del For es inválido."),
-            FOR_VARIABLE_NO_NUMERICA(218, "La variable del For debe ser de tipo Integer o Byte."),
-            FOR_VALORES_NO_NUMERICOS(219, "Los valores del For deben ser numéricos."),
-            NEXT_SIN_FOR(220, "Se encontró 'Next' sin un bloque For correspondiente."),
-            FOR_SIN_NEXT(221, "El bloque For no tiene su correspondiente 'Next'."),
-            FOR_VACIO(222, "El bloque For está vacío."),
-            FOR_ANIDADO(223, "No se permite un bloque For dentro de otro bloque For."),
+    // ----- IF / ELSE / END IF -----
+    IF_SIN_CONDICION(230, "La instrucción 'If' debe incluir una condición."),
+    IF_CONDICION_INVALIDA(231, "La condición del If es inválida."),
+    IF_SIN_THEN(232, "Falta la palabra reservada 'Then' en la instrucción If."),
+    IF_CONDICION_NO_BOOLEAN(233, "La condición del If debe evaluar a un valor Boolean."),
+    IF_IDENTIFICADOR_NO_DECLARADO(234, "Se usa un identificador no declarado dentro de la condición del If."),
+    IF_OPERADOR_RELACIONAL_INVALIDO(235, "Operador relacional inválido dentro de la condición del If."),
+    IF_OPERADOR_LOGICO_INVALIDO(236, "Operador lógico inválido dentro de la condición del If."),
+    IF_OPERANDO_INVALIDO(237, "Operando inválido dentro de la condición del If."),
+    IF_SIN_ENDIF(238, "El bloque If no tiene su correspondiente 'End If'."),
+    ENDIF_SIN_IF(239, "Se encontró 'End If' sin un bloque If correspondiente."),
+    ELSE_SIN_IF(240, "Se encontró 'Else' sin un bloque If correspondiente."),
+    ELSE_CON_TOKENS_EXTRA(241, "La instrucción 'Else' contiene tokens adicionales no permitidos."),
+    IF_VACIO(242, "El bloque If está vacío."),
+    ELSE_VACIO(243, "El bloque Else está vacío."),
+    ELSEIF_SIN_CONDICION(244, "La instrucción ElseIf debe incluir una condición."),
+    ELSEIF_SIN_THEN(245, "La instrucción ElseIf debe finalizar con la palabra reservada 'Then'."),
+    ELSEIF_CONDICION_INVALIDA(246, "La condición del ElseIf es inválida."),
+    ELSEIF_OPERANDO_INVALIDO(247, "Operando inválido dentro de la condición del ElseIf."),
+    ELSEIF_OPERADOR_INVALIDO(248, "Operador inválido dentro de la condición del ElseIf."),
+    IF_ANIDADO(249, "No se permite un bloque If dentro de otro bloque If."),
 
-
-            // ----- IF / ELSE / END IF -----
-            IF_SIN_CONDICION(230, "La instrucción 'If' debe incluir una condición."),
-            IF_CONDICION_INVALIDA(231, "La condición del If es inválida."),
-            IF_SIN_THEN(232, "Falta la palabra reservada 'Then' en la instrucción If."),
-            IF_CONDICION_NO_BOOLEAN(233, "La condición del If debe evaluar a un valor Boolean."),
-            IF_IDENTIFICADOR_NO_DECLARADO(234, "Se usa un identificador no declarado dentro de la condición del If."),
-            IF_OPERADOR_RELACIONAL_INVALIDO(235, "Operador relacional inválido dentro de la condición del If."),
-            IF_OPERADOR_LOGICO_INVALIDO(236, "Operador lógico inválido dentro de la condición del If."),
-            IF_OPERANDO_INVALIDO(237, "Operando inválido dentro de la condición del If."),
-            IF_SIN_ENDIF(238, "El bloque If no tiene su correspondiente 'End If'."),
-            ENDIF_SIN_IF(239, "Se encontró 'End If' sin un bloque If correspondiente."),
-            ELSE_SIN_IF(240, "Se encontró 'Else' sin un bloque If correspondiente."),
-            ELSE_CON_TOKENS_EXTRA(241, "La instrucción 'Else' contiene tokens adicionales no permitidos."),
-            IF_VACIO(242, "El bloque If está vacío."),
-            ELSE_VACIO(243, "El bloque Else está vacío."),
-            ELSEIF_SIN_CONDICION(244, "La instrucción ElseIf debe incluir una condición."),
-            ELSEIF_SIN_THEN(245, "La instrucción ElseIf debe finalizar con la palabra reservada 'Then'."),
-            ELSEIF_CONDICION_INVALIDA(246, "La condición del ElseIf es inválida."),
-            ELSEIF_OPERANDO_INVALIDO(247, "Operando inválido dentro de la condición del ElseIf."),
-            ELSEIF_OPERADOR_INVALIDO(248, "Operador inválido dentro de la condición del ElseIf."),
-            IF_ANIDADO(249, "No se permite un bloque If dentro de otro bloque If."),
-
-
-
-        // ----- ERRORES GENERALES DE BLOQUES -----
-        BLOQUE_DESBALANCEADO(250, "Las estructuras de control están desbalanceadas."),
-        BLOQUE_DESCONOCIDO(251, "Se encontró una estructura de control desconocida."),
-        BLOQUE_CON_TOKENS_EXTRA(252, "La instrucción contiene tokens adicionales no permitidos."),
-        FOR_CON_TOKENS_EXTRA(253, "La instrucción For contiene tokens adicionales no permitidos."),
-        WHILE_CON_TOKENS_EXTRA(254, "La instrucción While contiene tokens adicionales no permitidos."),
-        IF_CON_TOKENS_EXTRA(255, "La instrucción If contiene tokens adicionales no permitidos.");
-
+    // ----- ERRORES GENERALES DE BLOQUES -----
+    BLOQUE_DESBALANCEADO(250, "Las estructuras de control están desbalanceadas."),
+    BLOQUE_DESCONOCIDO(251, "Se encontró una estructura de control desconocida."),
+    BLOQUE_CON_TOKENS_EXTRA(252, "La instrucción contiene tokens adicionales no permitidos."),
+    FOR_CON_TOKENS_EXTRA(253, "La instrucción For contiene tokens adicionales no permitidos."),
+    WHILE_CON_TOKENS_EXTRA(254, "La instrucción While contiene tokens adicionales no permitidos."),
+    IF_CON_TOKENS_EXTRA(255, "La instrucción If contiene tokens adicionales no permitidos.");
 
     // ============================================================
     // CAMPOS INTERNOS
     // ============================================================
-    private final int codigo;      // Número único del error
-    private final String mensaje;  // Descripción del error
+    private final int codigo;
+    private final String mensaje;
 
-    /**
-     * Constructor del enum.
-     * @param codigo  Número del error
-     * @param mensaje Mensaje descriptivo asociado
-     */
     ErrorCode(int codigo, String mensaje) {
         this.codigo = codigo;
         this.mensaje = mensaje;
     }
 
-    /**
-     * Devuelve el número del error.
-     */
     public int getCodigo() {
         return codigo;
     }
 
-    /**
-     * Devuelve el mensaje descriptivo del error.
-     */
     public String getMensaje() {
         return mensaje;
     }
-    
-    /**
-     * Representación legible del error.
-     * Ejemplo: "Error 102. Se esperaba la palabra reservada 'As'."
-     */
+
     @Override
     public String toString() {
         return "Error " + codigo + ". " + mensaje;
