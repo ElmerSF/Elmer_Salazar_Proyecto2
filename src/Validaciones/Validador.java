@@ -1,3 +1,25 @@
+/*
+UNED Informática Compiladores 3307
+Estudiante: Elmer Eduardo Salazar Flores 3-0426-0158
+I Cuatrimestre 2026
+
+Clase encargada de validar las reglas sintácticas y semánticas del lenguaje
+definido para el Proyecto 1 y ampliado en el Proyecto 2. El Validador recibe
+los tokens generados por el Lexer y aplica las reglas del enunciado:
+ - Orden de Imports / Module
+ - Estructura de End Module
+ - Declaraciones Dim
+ - Validación de Console.WriteLine
+ - Tipos de datos y compatibilidad
+ - Validación de estructuras IF / WHILE / FOR (Proyecto 2)
+ - Detección de líneas inválidas o comentarios sin apóstrofe (parche)
+
+Cada error detectado se registra mediante ErrorManager, y la tabla de símbolos
+(SymbolTable) se utiliza para validar variables declaradas y tipos asociados.
+
+Se usó apoyo de IA para revisión y pruebas del código así como ordenarlo.
+*/
+
 package Validaciones;
 
 import Lexer.Token;
@@ -130,7 +152,7 @@ public class Validador {
         if (primero.es(TokenType.Type.NEXT)) return;
 
         // ------------------------------------------------------------
-        // 8. PARCHE NUEVO — LÍNEAS INVÁLIDAS O COMENTARIOS SIN '
+        // 8. PARCHE — LÍNEAS INVÁLIDAS O COMENTARIOS SIN '
         // ------------------------------------------------------------
         String trimmed = linea.trim();
 
@@ -156,7 +178,6 @@ public class Validador {
         return primero.es(TokenType.Type.IMPORTS)
             || primero.es(TokenType.Type.MODULE)
             || primero.es(TokenType.Type.DIM)
-            || primero.es(TokenType.Type.IDENTIFIER)
             || primero.es(TokenType.Type.IF)
             || primero.es(TokenType.Type.ELSEIF)
             || primero.es(TokenType.Type.ELSE)
