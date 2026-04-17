@@ -42,9 +42,9 @@ public class Main {
     private static final String directorio = System.getProperty("user.dir");
 
     // Activar/desactivar archivos de depuración
-    private static final boolean GENERAR_TOKENS = true;
-    private static final boolean GENERAR_SIMBOLOS = true;
-    private static final boolean GENERAR_CLASIFICACION = true;
+    private static final boolean GENERAR_TOKENS = false;
+    private static final boolean GENERAR_SIMBOLOS = false;
+    private static final boolean GENERAR_CLASIFICACION = false;
 
     public static void main(String[] args) {
 
